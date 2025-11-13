@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Comedy Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #1a472a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1em;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .welcome-screen {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .welcome-screen h1 {
+            color: #c41e3a;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .welcome-screen .subtitle {
+            color: #2d5a3d;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .btn {
+            background: #c41e3a;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Georgia', serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(196, 30, 58, 0.4);
+        }
+
+        .voting-screen {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .progress {
+            color: #2d5a3d;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* --- New Flashcard Styles --- */
+        .flashcard-container {
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            min-height: 180px;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard-container.is-flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px;
+            border-radius: 15px;
+            min-height: 180px;
+        }
+
+        .flashcard-front {
+            background: #f8f8f8;
+            border-left: 5px solid #c41e3a;
+        }
+
+        .flashcard-back {
+            background: #f0fff0;
+            border-left: 5px solid #2d5a3d;
+            transform: rotateY(180deg);
+        }
+        /* --- End New Flashcard Styles --- */
+
+
+        .joke-setup {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .joke-punchline {
+            font-size: 1.4em;
+            color: #2d5a3d;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .student-card {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .student-card.voted {
+            border-color: #2d5a3d;
+            background: #f0f8f0;
+        }
+
+        .student-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .vote-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vote-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .vote-btn.like {
+            background: #ffd700;
+        }
+
+        .vote-btn.like:hover {
+            background: #ffed4e;
+        }
+
+        .vote-btn.dislike {
+            background: #ddd;
+        }
+
+        .vote-btn.dislike:hover {
+            background: #ccc;
+        }
+
+        .vote-btn.selected {
+            box-shadow: 0 0 0 3px #2d5a3d;
+            transform: scale(1.05);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: #2d5a3d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Georgia', serif;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #1a472a;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .results-screen {
+            display: none;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .results-header h1 {
+            color: #c41e3a;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .joke-result {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .joke-result:last-child {
+            border-bottom: none;
+        }
+
+        .result-joke {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #c41e3a;
+        }
+
+        .chart {
+            margin: 20px 0;
+        }
+
+        .chart-bars {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-end;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .bar-container {
+            flex: 1;
+            max-width: 250px;
+            text-align: center;
+        }
+
+        .bar {
+            background: linear-gradient(to top, #c41e3a, #ff5555);
+            border-radius: 10px 10px 0 0;
+            transition: height 0.8s ease-out;
+            position: relative;
+            min-height: 30px;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #c41e3a;
+            font-size: 1.2em;
+        }
+
+        .bar-label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2d5a3d;
+            font-size: 1.1em;
+        }
+
+        .student-votes {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .print-btn {
+            background: #ffd700;
+            color: #2d5a3d;
+            margin: 20px auto;
+            display: block;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+
+        .print-btn:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .snowflake, .nav-buttons, .print-btn {
+                display: none !important;
+            }
+
+            .results-screen {
+                box-shadow: none;
+            }
+
+            .joke-result {
+                page-break-inside: avoid;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="snowflakes"></div>
+
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1>🎄 Christmas Comedy Workshop 🎄</h1>
+            <p class="subtitle">Let's find out which jokes sleigh the competition!</p>
+            <button class="btn" id="startBtn">Start Voting! 🎅</button>
+        </div>
+
+        <!-- Voting Screen -->
+        <div class="voting-screen" id="votingScreen">
+            <div class="progress" id="progress">Joke 1 of 15</div>
+            
+            <!-- New Flashcard Structure -->
+            <div class="flashcard-container" id="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="joke-setup" id="jokeSetup"></div>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div class="joke-punchline" id="jokePunchline"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="students-grid" id="studentsGrid"></div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn" id="prevBtn" disabled>← Previous</button>
+                <button class="nav-btn" id="nextBtn">Next →</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <div class="results-header">
+                <h1>🎄 The Results Are In! 🎄</h1>
+            </div>
+
+            <div id="resultsContainer"></div>
+
+            <button class="print-btn" id="printBtn">🖨️ Print Results</button>
+        </div>
+    </div>
+
+    <script>
+        const students = ['Jake', 'Edie', 'William', 'Mason', 'Zara', 'Scott', 'Kate', 'Sophie'];
+
+        const jokes = [
+            {
+                setup: "What do you call an obnoxious reindeer?",
+                punchline: "RUDEolph! 🦌"
+            },
+            {
+                setup: "What do snowmen eat for breakfast?",
+                punchline: "Frosted Flakes! ⛄"
+            },
+            {
+                setup: "What's Santa's favorite type of music?",
+                punchline: "WRAP music! 🎁"
+            },
+            {
+                setup: "Why did the Christmas tree go to the barber?",
+                punchline: "It needed a TRIM! 🎄✂️"
+            },
+            {
+                setup: "What do elves learn in school?",
+                punchline: "The ELF-abet! 📚"
+            },
+            {
+                setup: "What do you get if you cross a snowman with a vampire?",
+                punchline: "Frostbite! 🧛⛄"
+            },
+            {
+                setup: "What do you call a reindeer with no eyes?",
+                punchline: "No-eye-deer! 🦌👀"
+            },
+            {
+                setup: "What do you call a broke Santa Claus?",
+                punchline: "Saint NICKEL-less! 💰"
+            },
+            {
+                setup: "What do gingerbread men use to make their beds?",
+                punchline: "Cookie sheets! 🍪"
+            },
+            {
+                setup: "Why does Santa go down the chimney?",
+                punchline: "Because it SOOTS him! 🏠"
+            },
+            {
+                setup: "What do you call a scary looking reindeer?",
+                punchline: "A CARI-BOO! 👻🦌"
+            },
+            {
+                setup: "What's red and white and falls down chimneys?",
+                punchline: "Santa KLUTZ! 🎅💥"
+            },
+            {
+                setup: "What do Christmas trees and bad knitters have in common?",
+                punchline: "They both drop their needles! 🎄🧶"
+            },
+            {
+                setup: "What do you call Santa when he takes a break?",
+                punchline: "Santa PAUSE! ⏸️"
+            },
+            {
+                setup: "Why did Santa's helper see the therapist?",
+                punchline: "Because he had low ELF-esteem! 🧝"
+            }
+        ];
+
+        let currentJoke = 0;
+        let votes = jokes.map(() => ({}));
+
+        const flashcard = document.getElementById('flashcard');
+
+        // Create snowflakes
+        function createSnowflakes() {
+            const snowflakesContainer = document.getElementById('snowflakes');
+            const snowflakeChars = ['❄', '❅', '❆'];
+            
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                snowflakesContainer.appendChild(snowflake);
+            }
+        }
+
+        // Initialize
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('votingScreen').style.display = 'block';
+            showJoke(0);
+        });
+        
+        // Add event listener for the flip
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        function showJoke(index) {
+            currentJoke = index;
+            const joke = jokes[index];
+            
+            // --- Logic to reset the card to the front when changing jokes ---
+            flashcard.classList.remove('is-flipped');
+            
+            document.getElementById('progress').textContent = `Joke ${index + 1} of ${jokes.length}`;
+            document.getElementById('jokeSetup').textContent = joke.setup;
+            document.getElementById('jokePunchline').textContent = joke.punchline;
+            
+            renderStudentCards();
+            updateNavButtons();
+        }
+
+        function renderStudentCards() {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = students.map(student => {
+                const vote = votes[currentJoke][student];
+                return `
+                    <div class="student-card ${vote !== undefined ? 'voted' : ''}" data-student="${student}">
+                        <div class="student-name">${student}</div>
+                        <div class="vote-buttons">
+                            <button class="vote-btn like ${vote === true ? 'selected' : ''}" 
+                                    onclick="handleVote('${student}', true)">
+                                😄
+                            </button>
+                            <button class="vote-btn dislike ${vote === false ? 'selected' : ''}" 
+                                    onclick="handleVote('${student}', false)">
+                                😐
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleVote(student, liked) {
+            votes[currentJoke][student] = liked;
+            renderStudentCards();
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentJoke === 0;
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (currentJoke === jokes.length - 1) {
+                nextBtn.textContent = 'Show Results! 🎉';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentJoke > 0) {
+                showJoke(currentJoke - 1);
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentJoke < jokes.length - 1) {
+                showJoke(currentJoke + 1);
+            } else {
+                showResults();
+            }
+        });
+
+        function showResults() {
+            document.getElementById('votingScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = jokes.map((joke, index) => {
+                const jokeVotes = votes[index];
+                let likes = 0;
+                let dislikes = 0;
+                let likedBy = [];
+                let dislikedBy = [];
+                
+                students.forEach(student => {
+                    if (jokeVotes[student] === true) {
+                        likes++;
+                        likedBy.push(student);
+                    } else if (jokeVotes[student] === false) {
+                        dislikes++;
+                        dislikedBy.push(student);
+                    }
+                });
+                
+                const total = likes + dislikes;
+                const likePercent = total > 0 ? (likes / total * 100) : 0;
+                const dislikePercent = total > 0 ? (dislikes / total * 100) : 0;
+                
+                return `
+                    <div class="joke-result">
+                        <div class="result-joke">
+                            <div class="joke-setup">${joke.setup}</div>
+                            <div class="joke-punchline">${joke.punchline}</div>
+                        </div>
+                        
+                        <div class="chart">
+                            <div class="chart-bars">
+                                <div class="bar-container">
+                                    <div class="bar" style="height: ${Math.max(likePercent * 2, 30)}px">
+                                        <div class="bar-value">${likes}</div>
+                                    </div>
+                                    <div class="bar-label">😄 Loved It</div>
+                                    ${likedBy.length > 0 ? `<div class="student-votes">${likedBy.join(', ')}</div>` : ''}
+                                </div>
+                                <div class="bar-container">
+                                    <div class="bar" style="height: ${Math.max(dislikePercent * 2, 30)}px; background: linear-gradient(to top, #666, #999);">
+                                        <div class="bar-value">${dislikes}</div>
+                                    </div>
+                                    <div class="bar-label">😐 Not for Me</div>
+                                    ${dislikedBy.length > 0 ? `<div class="student-votes">${dislikedBy.join(', ')}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+        createSnowflakes();
+    </script>
+</body>
+</html>
